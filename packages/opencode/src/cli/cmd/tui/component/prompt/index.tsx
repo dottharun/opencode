@@ -942,6 +942,7 @@ export function Prompt(props: PromptProps) {
               focusedBackgroundColor={theme.backgroundElement}
               cursorColor={theme.text}
               syntaxStyle={syntax()}
+              cursorStyle={{style: "block", blinking: false }}
             />
             <box flexDirection="row" flexShrink={0} paddingTop={1} gap={1}>
               <text fg={highlight()}>
