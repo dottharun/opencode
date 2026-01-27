@@ -37,6 +37,7 @@ import { createPerplexity } from "@ai-sdk/perplexity"
 import { createVercel } from "@ai-sdk/vercel"
 import { createGitLab } from "@gitlab/gitlab-ai-provider"
 import { ProviderTransform } from "./transform"
+import { ApiHelper } from "./apiHelper"
 
 export namespace Provider {
   const log = Log.create({ service: "provider" })
@@ -987,6 +988,23 @@ export namespace Provider {
         // Preserve custom fetch if it exists, wrap it with timeout logic
         const fetchFn = customFetch ?? fetch
         const opts = init ?? {}
+
+        // Dynamically refresh API key if apiHelper is configured
+        const apiHelper = provider.options?.apiKeyHelper
+
+        if (apiHelper) {
+          const freshKey = await ApiHelper.getKey(
+            apiHelper,
+            provider.options?.apiKeyRefreshInterval,
+            model.providerID
+          )
+          log.debug("got apiHelperKey", {freshKey})
+          if (freshKey) {
+            const headers = new Headers(opts.headers)
+            headers.set("Authorization", `Bearer ${freshKey}`)
+            opts.headers = headers
+          }
+        }
 
         if (options["timeout"] !== undefined && options["timeout"] !== null) {
           const signals: AbortSignal[] = []
